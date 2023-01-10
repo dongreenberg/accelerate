@@ -22,7 +22,8 @@ from .state import AcceleratorState
 from .utils import PrecisionType, PrepareForLaunch, patch_environment
 
 
-def notebook_launcher(function, args=(), num_processes=None, mixed_precision="no", use_port="29500"):
+def notebook_launcher(function, args=(), num_processes=None, mixed_precision="no", use_port="29500",
+                      start_method="fork"):
     """
     Launches a training function, using several processes if it's possible in the current environment (TPU with
     multiple cores for instance).
@@ -71,7 +72,7 @@ def notebook_launcher(function, args=(), num_processes=None, mixed_precision="no
 
         launcher = PrepareForLaunch(function, distributed_type="TPU")
         print(f"Launching a training on {num_processes} TPU cores.")
-        xmp.spawn(launcher, args=args, nprocs=num_processes, start_method="fork")
+        xmp.spawn(launcher, args=args, nprocs=num_processes, start_method=start_method)
     elif in_colab:
         # No need for a distributed launch otherwise as it's either CPU or one GPU.
         if torch.cuda.is_available():
@@ -111,7 +112,7 @@ def notebook_launcher(function, args=(), num_processes=None, mixed_precision="no
                 launcher = PrepareForLaunch(function, distributed_type="MULTI_GPU")
 
                 print(f"Launching training on {num_processes} GPUs.")
-                start_processes(launcher, args=args, nprocs=num_processes, start_method="fork")
+                start_processes(launcher, args=args, nprocs=num_processes, start_method=start_method)
 
         else:
             # No need for a distributed launch otherwise as it's either CPU, GPU or MPS.
